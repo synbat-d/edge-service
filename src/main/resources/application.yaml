@@ -92,6 +92,12 @@ resilience4j:
       default:
         timeoutDuration: 6s # Сделал чуть больше, чем response-timeout (5s)
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, refresh
+
 logging:
   level:
     io.github.resilience4j: DEBUG
