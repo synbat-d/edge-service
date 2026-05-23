@@ -112,7 +112,13 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, refresh
+        include: refresh, health
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
 
 logging:
   group:

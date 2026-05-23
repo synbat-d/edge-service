@@ -34,6 +34,8 @@ public class SecurityConfig {
                                 .permitAll()
                                 .pathMatchers(HttpMethod.GET, "/books/**")
                                 .permitAll()
+                                .pathMatchers("/actuator/**")
+                                .permitAll()
                                 .anyExchange()
                                 .authenticated())
                 .exceptionHandling(exceptionHandling ->
