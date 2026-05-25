@@ -26,17 +26,36 @@ public class SecurityConfigTests {
     ReactiveClientRegistrationRepository clientRegistrationRepository;
 
     @Test
+    void whenLogoutNotAuthenticatedAndNoCsrfTokenThen403() {
+        webClient
+                .post()
+                .uri("/logout")
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
+    @Test
+    void whenLogoutAuthenticatedAndNoCsrfTokenThen403() {
+        webClient
+                .mutateWith(SecurityMockServerConfigurers.mockOidcLogin())
+                .post()
+                .uri("/logout")
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
+    @Test
     void whenLogoutAuthenticatedAndWithCsrfTokenThen302() {
         when(clientRegistrationRepository.findByRegistrationId("test"))
                 .thenReturn(Mono.just(testClientRegistration()));
+
         webClient
                 .mutateWith(SecurityMockServerConfigurers.mockOidcLogin())
                 .mutateWith(SecurityMockServerConfigurers.csrf())
                 .post()
                 .uri("/logout")
                 .exchange()
-                .expectStatus()
-                .isFound();
+                .expectStatus().isFound();
     }
 
     private ClientRegistration testClientRegistration() {

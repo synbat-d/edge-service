@@ -1,24 +1,13 @@
 server:
   port: 9000
   netty:
-    connection-timeout: 2s # 1)
+    connection-timeout: 2s
     idle-timeout: 15s
   shutdown: graceful
 
 spring:
   application:
     name: edge-service
-  security:
-    oauth2:
-      client:
-        registration:
-          keycloak:
-            client-id: edge-service
-            client-secret: polar-keycloak-secret
-            scope: openid, roles
-        provider:
-          keycloak:
-            issuer-uri: ${KEYCLOAK_URI:http://localhost:8080}/realms/PolarBookshop
   lifecycle:
     timeout-per-shutdown-phase: 15s
   config:
@@ -26,11 +15,13 @@ spring:
   cloud:
     config:
       uri: http://localhost:8888
-      fail-fast: false
+      request-connect-timeout: 5000 # 5s
+      request-read-timeout: 5000 # 5s
+      fail-fast: false # In production, set to true
       retry:
         max-attempts: 6
-        initial-interval: 1000
-        max-interval: 2000
+        initial-interval: 1000 # 1s
+        max-interval: 2000 # 2s
         multiplier: 1.1
     gateway:
       server:
@@ -94,6 +85,17 @@ spring:
     timeout: 10m
     redis:
       namespace: polar:edge
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: edge-service
+            client-secret: polar-keycloak-secret
+            scope: openid,roles
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8080/realms/PolarBookshop
 
 resilience4j:
   circuitbreaker:
@@ -102,17 +104,28 @@ resilience4j:
         slidingWindowSize: 20
         permittedNumberOfCallsInHalfOpenState: 5
         failureRateThreshold: 50
-        waitDurationInOpenState: 15s # Можно использовать суффикс s
+        waitDurationInOpenState: 15000
   timelimiter:
     configs:
       default:
-        timeoutDuration: 6s # Сделал чуть больше, чем response-timeout (5s)
+        timeoutDuration: 5s
+
+logging:
+  group:
+    circuitbreaker: io.github.resilience4j, org.springframework.cloud.circuitbreaker
+  level:
+    circuitbreaker: info
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+
+info:
+  system: Polar Bookshop
 
 management:
   endpoints:
     web:
       exposure:
-        include: refresh, health, prometheus
+        include: configprops, env, gateway, health, heapdump, info, loggers, mappings, prometheus
   endpoint:
     health:
       show-details: always
@@ -121,13 +134,14 @@ management:
         enabled: true
       group:
         readiness:
-          include: readinessState, redis
+          include: readinessState,redis
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
   metrics:
     tags:
       application: ${spring.application.name}
-
-logging:
-  group:
-    circuitbreaker: io.github.resilience4j, org.springframework.cloud.circuitbreaker
-  level:
-    circuitbreaker: info
