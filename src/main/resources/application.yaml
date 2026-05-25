@@ -112,13 +112,19 @@ management:
   endpoints:
     web:
       exposure:
-        include: refresh, health
+        include: refresh, health, prometheus
   endpoint:
     health:
       show-details: always
       show-components: always
       probes:
         enabled: true
+      group:
+        readiness:
+          include: readinessState, redis
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 logging:
   group:
