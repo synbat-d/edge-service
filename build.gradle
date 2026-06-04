@@ -53,20 +53,6 @@ dependencyManagement {
 	}
 }
 
-bootBuildImage{
-	imageName = "${project.name}"
-	environment = ["BP_JVM_VERSION": "17.*"]
-	docker {
-//		publishRegistry {
-//			username = project.findProperty("registryUsername")
-//			password = project.findProperty("registryToken")
-//			url = project.findProperty("registryUrl")
-//		}
-		host = "tcp://127.0.0.1:2375"
-		tlsVerify = false
-	}
-}
-
 tasks.named('test') {
 	useJUnitPlatform()
 }
@@ -79,4 +65,8 @@ tasks.register('copyAgent', Copy) {
 
 tasks.named('bootJar') {
 	dependsOn tasks.named('copyAgent')
+}
+
+tasks.named('jar') {
+	enabled = false
 }
