@@ -35,13 +35,13 @@ spec:
             httpGet:
               path: /actuator/health/liveness
               port: 9000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 90
             periodSeconds: 5
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
               port: 9000
-            initialDelaySeconds: 5
+            initialDelaySeconds: 90
             periodSeconds: 15
       volumes:
         - name: edge-config-volume
