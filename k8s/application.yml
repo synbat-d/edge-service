@@ -1,0 +1,36 @@
+spring:
+  data:
+    redis:
+      host: polar-redis
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://polar-keycloak/realms/PolarBookshop
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: catalog-route
+              uri: http://catalog-service
+              predicates:
+                - Path=/books/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: catalogCircuitBreaker
+                    fallbackUri: forward:/catalog-fallback
+            - id: order-route
+              uri: http://order-service
+              predicates:
+                - Path=/orders/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: orderCircuitBreaker
+            - id: spa-route
+              uri: http://polar-ui
+              predicates:
+                - Path=/,/*.css,/*.js,/favicon.ico
