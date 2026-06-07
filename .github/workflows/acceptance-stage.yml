@@ -6,6 +6,13 @@ on:
     branches: [ main ]
 concurrency: acceptance
 
+env:
+  owner: synbat-d
+  registry: ghcr.io
+  app_repo: edge-service
+  deploy_repo: polar-deployment
+  version: ${{github.sha}}
+
 jobs:
   functional:
     name: Functional Acceptance Tests
@@ -25,3 +32,19 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - run: echo "Running security tests"
+  deliver:
+    name: Deliver release candidate to production
+    needs: [functional, performance, security]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Deliver application to production
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.DISPATCH_TOKEN }}
+          repository: ${{ env.owner }}/${{ env.deploy_repo }}
+          event-type: app_delivery
+          client-payload: '{
+            "app_image": "${{ env.registry }}/${{ env.owner }}/${{ env.app_repo }}",
+            "app_name": "${{ env.app_repo }}", 
+            "app_version": "${{ env.version }}" 
+          }'
